@@ -432,6 +432,10 @@ int main(int argc, char **argv) {
 		type = IPC_GET_OUTPUTS;
 	} else if (strcasecmp(cmdtype, "get_tree") == 0) {
 		type = IPC_GET_TREE;
+	} else if (strcasecmp(cmdtype, "get_frootloops") == 0) {
+		type = IPC_GET_FROOTLOOPS;
+	} else if (strcasecmp(cmdtype, "get_node_at_coords") == 0) {
+		type = IPC_GET_NODE_AT_COORDS;
 	} else if (strcasecmp(cmdtype, "get_marks") == 0) {
 		type = IPC_GET_MARKS;
 	} else if (strcasecmp(cmdtype, "get_bar_config") == 0) {

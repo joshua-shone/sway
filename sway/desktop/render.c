@@ -945,7 +945,28 @@ static void render_floating(struct sway_output *soutput,
 				if (floater->fullscreen_mode != FULLSCREEN_NONE) {
 					continue;
 				}
-				render_floating_container(soutput, damage, floater);
+				if (!floater->current.focused) {
+					render_floating_container(soutput, damage, floater);
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < root->outputs->length; ++i) {
+		struct sway_output *output = root->outputs->items[i];
+		for (int j = 0; j < output->current.workspaces->length; ++j) {
+			struct sway_workspace *ws = output->current.workspaces->items[j];
+			if (!workspace_is_visible(ws)) {
+				continue;
+			}
+			for (int k = 0; k < ws->current.floating->length; ++k) {
+				struct sway_container *floater = ws->current.floating->items[k];
+				if (floater->fullscreen_mode != FULLSCREEN_NONE) {
+					continue;
+				}
+				if (floater->current.focused) {
+					render_floating_container(soutput, damage, floater);
+				}
 			}
 		}
 	}

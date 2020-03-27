@@ -25,6 +25,7 @@
 #include "sway/input/input-manager.h"
 #include "sway/input/keyboard.h"
 #include "sway/input/seat.h"
+#include "sway/input/cursor.h"
 #include "sway/tree/root.h"
 #include "sway/tree/view.h"
 #include "sway/tree/workspace.h"
@@ -801,6 +802,28 @@ void ipc_client_handle_command(struct ipc_client *client, uint32_t payload_lengt
 		ipc_send_reply(client, payload_type, json_string,
 			(uint32_t)strlen(json_string));
 		json_object_put(tree);
+		goto exit_cleanup;
+	}
+
+	case IPC_GET_FROOTLOOPS:
+	{
+		const char *frootloops = "[\"FROOTLOOPS\"]";
+		ipc_send_reply(client, payload_type, frootloops,
+			(uint32_t)strlen(frootloops));
+		goto exit_cleanup;
+	}
+
+	case IPC_GET_NODE_AT_COORDS:
+	{
+		struct wlr_surface *surface = NULL;
+		double sx, sy;
+		struct sway_node *node = node_at_coords(NULL, 1900, 500, &surface, &sx, &sy);
+		const char *json_string = "[]";
+		if (node) {
+			json_object *tree = ipc_json_describe_node_recursive(node);
+			json_string = json_object_to_json_string(tree);
+		}
+		ipc_send_reply(client, payload_type, json_string, (uint32_t)strlen(json_string));
 		goto exit_cleanup;
 	}
 

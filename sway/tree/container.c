@@ -289,7 +289,7 @@ static struct sway_container *container_at_linear(struct sway_node *parent,
 
 static struct sway_container *floating_container_at(double lx, double ly,
 		struct wlr_surface **surface, double *sx, double *sy) {
-	for (int i = 0; i < root->outputs->length; ++i) {
+	for (int i = root->outputs->length - 1; i >= 0; --i) {
 		struct sway_output *output = root->outputs->items[i];
 		for (int j = 0; j < output->workspaces->length; ++j) {
 			struct sway_workspace *ws = output->workspaces->items[j];
@@ -300,6 +300,9 @@ static struct sway_container *floating_container_at(double lx, double ly,
 			// reverse.
 			for (int k = ws->floating->length - 1; k >= 0; --k) {
 				struct sway_container *floater = ws->floating->items[k];
+				if (!floater->current.focused) {
+					continue;
+				}
 				struct wlr_box box = {
 					.x = floater->x,
 					.y = floater->y,
@@ -313,6 +316,35 @@ static struct sway_container *floating_container_at(double lx, double ly,
 			}
 		}
 	}
+
+	for (int i = root->outputs->length - 1; i >= 0; --i) {
+		struct sway_output *output = root->outputs->items[i];
+		for (int j = 0; j < output->workspaces->length; ++j) {
+			struct sway_workspace *ws = output->workspaces->items[j];
+			if (!workspace_is_visible(ws)) {
+				continue;
+			}
+			// Items at the end of the list are on top, so iterate the list in
+			// reverse.
+			for (int k = ws->floating->length - 1; k >= 0; --k) {
+				struct sway_container *floater = ws->floating->items[k];
+				if (floater->current.focused) {
+					continue;
+				}
+				struct wlr_box box = {
+					.x = floater->x,
+					.y = floater->y,
+					.width = floater->width,
+					.height = floater->height,
+				};
+				if (wlr_box_contains_point(&box, lx, ly)) {
+					return tiling_container_at(&floater->node, lx, ly,
+							surface, sx, sy);
+				}
+			}
+		}
+	}
+
 	return NULL;
 }
 
